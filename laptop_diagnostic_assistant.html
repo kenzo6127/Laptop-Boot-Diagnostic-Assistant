@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laptop Power & Boot Diagnostic Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-sky-500 p-2.5 rounded-xl shadow-inner text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">Laptop Boot Diagnostic Assistant</h1>
+                    <p class="text-xs text-sky-400 font-medium">Hardware Troubleshooting & Diagnostic Guide</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleKBModal(true)" class="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-sky-300 rounded-lg border border-slate-700 transition-colors flex items-center space-x-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    <span>View Diagnostic Guide</span>
+                </button>
+                <button onclick="resetDiagnostic()" class="px-3 py-1.5 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-lg transition-colors flex items-center space-x-1 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span>Restart Assistant</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full flex flex-col">
+        
+        <!-- Quick Preset Test Bar -->
+        <section class="mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <div class="flex flex-wrap justify-between items-center gap-3">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Quick Test Presets:
+                </span>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="loadPreset('rule1')" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-md border border-slate-300 transition">Scenario 1: Dead Adapter</button>
+                    <button onclick="loadPreset('rule2')" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-md border border-slate-300 transition">Scenario 2: Bad Screen</button>
+                    <button onclick="loadPreset('rule3')" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-md border border-slate-300 transition">Scenario 3: RAM Fault</button>
+                    <button onclick="loadPreset('rule4')" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-md border border-slate-300 transition">Scenario 4: BSOD Error</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Stepper Indicator -->
+        <div id="stepperContainer" class="mb-8">
+            <div class="flex items-center justify-between max-w-2xl mx-auto px-2">
+                <!-- Step 1 -->
+                <div class="flex flex-col items-center">
+                    <div id="stepCircle1" class="w-10 h-10 rounded-full bg-sky-600 text-white font-bold flex items-center justify-center shadow-md transition-all">1</div>
+                    <span id="stepLabel1" class="text-xs font-semibold mt-1.5 text-sky-700">Power & LEDs</span>
+                </div>
+                <div id="stepConnector1" class="flex-1 h-1 bg-slate-200 mx-3 rounded transition-all"></div>
+                <!-- Step 2 -->
+                <div class="flex flex-col items-center">
+                    <div id="stepCircle2" class="w-10 h-10 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-all">2</div>
+                    <span id="stepLabel2" class="text-xs font-medium mt-1.5 text-slate-400">Component Check</span>
+                </div>
+                <div id="stepConnector2" class="flex-1 h-1 bg-slate-200 mx-3 rounded transition-all"></div>
+                <!-- Step 3 -->
+                <div class="flex flex-col items-center">
+                    <div id="stepCircle3" class="w-10 h-10 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-all">3</div>
+                    <span id="stepLabel3" class="text-xs font-medium mt-1.5 text-slate-400">Diagnosis</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Wizard View -->
+        <div class="max-w-3xl mx-auto w-full">
+            
+            <!-- Questionnaire Form -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 relative overflow-hidden" id="wizardCard">
+
+                <!-- SCREEN 1: Power & LED Symptoms -->
+                    <div id="screen1" class="fade-in space-y-6">
+                        <div class="border-b border-slate-100 pb-4">
+                            <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-sky-100 text-sky-800 rounded-md mb-2">Screen 1 • Primary Symptom</span>
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-900">What happens when you press the laptop power button?</h2>
+                            <p class="text-sm text-slate-500 mt-1">Select the primary physical behavior observed upon pushing power.</p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="option-card flex items-start p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-sky-500 hover:bg-sky-50/50 transition-all group">
+                                <input type="radio" name="screen1_option" value="no_power" class="mt-1 w-4 h-4 text-sky-600 focus:ring-sky-500" onchange="selectOption('screen1', 'no_power')">
+                                <div class="ml-3">
+                                    <div class="font-semibold text-slate-800 group-hover:text-sky-900">No lights turn on and no fan sound is heard</div>
+                                    <p class="text-xs text-slate-500 mt-0.5">Laptop remains completely silent and dark with no visible signs of life.</p>
+                                </div>
+                            </label>
+
+                            <label class="option-card flex items-start p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-sky-500 hover:bg-sky-50/50 transition-all group">
+                                <input type="radio" name="screen1_option" value="black_screen" class="mt-1 w-4 h-4 text-sky-600 focus:ring-sky-500" onchange="selectOption('screen1', 'black_screen')">
+                                <div class="ml-3">
+                                    <div class="font-semibold text-slate-800 group-hover:text-sky-900">Power LED lights up and fans spin, but the screen stays completely black</div>
+                                    <p class="text-xs text-slate-500 mt-0.5">Hardware turns on and power system initializes, but no visual image is displayed.</p>
+                                </div>
+                            </label>
+
+                            <label class="option-card flex items-start p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-sky-500 hover:bg-sky-50/50 transition-all group">
+                                <input type="radio" name="screen1_option" value="blue_screen" class="mt-1 w-4 h-4 text-sky-600 focus:ring-sky-500" onchange="selectOption('screen1', 'blue_screen')">
+                                <div class="ml-3">
+                                    <div class="font-semibold text-slate-800 group-hover:text-sky-900">Screen turns on and displays a blue error/recovery screen</div>
+                                    <p class="text-xs text-slate-500 mt-0.5">System powers on and displays graphics, but halts at a Blue Screen of Death (BSOD) or recovery prompt.</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="pt-4 flex justify-end">
+                            <button id="btnNext1" disabled onclick="advanceFromScreen1()" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium text-sm rounded-xl transition shadow-sm flex items-center gap-2">
+                                <span>Continue</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 2: External Display Check -->
+                    <div id="screen2" class="hidden fade-in space-y-6">
+                        <div class="border-b border-slate-100 pb-4">
+                            <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-sky-100 text-sky-800 rounded-md mb-2">Screen 2 • Video Signal Check</span>
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-900">When connected to an external monitor or TV via HDMI, does an image display?</h2>
+                            <p class="text-sm text-slate-500 mt-1">Isolate whether the GPU/motherboard is outputting valid video signals.</p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="option-card flex items-start p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-sky-500 hover:bg-sky-50/50 transition-all group">
+                                <input type="radio" name="screen2_option" value="ext_yes" class="mt-1 w-4 h-4 text-sky-600 focus:ring-sky-500" onchange="selectOption('screen2', 'ext_yes')">
+                                <div class="ml-3">
+                                    <div class="font-semibold text-slate-800 group-hover:text-sky-900">Yes, the external monitor displays the desktop normally</div>
+                                    <p class="text-xs text-slate-500 mt-0.5">The laptop renders graphics properly to external screens.</p>
+                                </div>
+                            </label>
+
+                            <label class="option-card flex items-start p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-sky-500 hover:bg-sky-50/50 transition-all group">
+                                <input type="radio" name="screen2_option" value="ext_no" class="mt-1 w-4 h-4 text-sky-600 focus:ring-sky-500" onchange="selectOption('screen2', 'ext_no')">
+                                <div class="ml-3">
+                                    <div class="font-semibold text-slate-800 group-hover:text-sky-900">No, neither the built-in screen nor the external monitor displays anything</div>
+                                    <p class="text-xs text-slate-500 mt-0.5">Both internal display and external monitors remain completely blank.</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="pt-4 flex justify-between items-center">
+                            <button onclick="goBackTo(1)" class="px-4 py-2 text-slate-600 hover:text-slate-800 text-sm font-medium flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                <span>Back</span>
+                            </button>
+                            <button id="btnNext2" disabled onclick="generateDiagnosis()" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium text-sm rounded-xl transition shadow-sm flex items-center gap-2">
+                                <span>Generate Diagnosis</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SCREEN 3: Charger Status -->
+                    <div id="screen3" class="hidden fade-in space-y-6">
+                        <div class="border-b border-slate-100 pb-4">
+                            <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-sky-100 text-sky-800 rounded-md mb-2">Screen 3 • Power Supply Status</span>
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-900">Is the charger plugged in, and is the charging LED indicator lit?</h2>
+                            <p class="text-sm text-slate-500 mt-1">Check the physical LED indicator located near the charging port or power jack.</p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="option-card flex items-start p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-sky-500 hover:bg-sky-50/50 transition-all group">
+                                <input type="radio" name="screen3_option" value="charger_solid" class="mt-1 w-4 h-4 text-sky-600 focus:ring-sky-500" onchange="selectOption('screen3', 'charger_solid')">
+                                <div class="ml-3">
+                                    <div class="font-semibold text-slate-800 group-hover:text-sky-900">Charging indicator light is solid ON</div>
+                                    <p class="text-xs text-slate-500 mt-0.5">The DC jack detects power and shows a constant steady light.</p>
+                                </div>
+                            </label>
+
+                            <label class="option-card flex items-start p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-sky-500 hover:bg-sky-50/50 transition-all group">
+                                <input type="radio" name="screen3_option" value="charger_off_blink" class="mt-1 w-4 h-4 text-sky-600 focus:ring-sky-500" onchange="selectOption('screen3', 'charger_off_blink')">
+                                <div class="ml-3">
+                                    <div class="font-semibold text-slate-800 group-hover:text-sky-900">Charging indicator light is OFF or blinking rapidly</div>
+                                    <p class="text-xs text-slate-500 mt-0.5">No light is visible, or the light flashes rapidly indicating power negotiation failure/short circuit.</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="pt-4 flex justify-between items-center">
+                            <button onclick="goBackTo(1)" class="px-4 py-2 text-slate-600 hover:text-slate-800 text-sm font-medium flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                <span>Back</span>
+                            </button>
+                            <button id="btnNext3" disabled onclick="generateDiagnosis()" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium text-sm rounded-xl transition shadow-sm flex items-center gap-2">
+                                <span>Generate Diagnosis</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- RESULTS SCREEN -->
+                    <div id="screenResults" class="hidden fade-in space-y-6">
+                        <div class="border-b border-slate-100 pb-4 flex justify-between items-start flex-wrap gap-2">
+                            <div>
+                                <span class="inline-block px-2.5 py-1 text-xs font-semibold bg-emerald-100 text-emerald-800 rounded-md mb-2">Diagnostic Complete</span>
+                                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Diagnostic Findings & Recommendation</h2>
+                            </div>
+                            <button onclick="window.print()" class="px-3 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-300 transition flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                Print Report
+                            </button>
+                        </div>
+
+                        <!-- Main Conclusion Box -->
+                        <div class="p-5 rounded-2xl border-2 bg-slate-50 border-slate-200" id="conclusionContainer">
+                            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 mb-1" id="ruleIdBadge">
+                                Diagnosis Match
+                            </div>
+                            <h3 class="text-xl font-extrabold text-slate-900" id="diagnosticStatus">Diagnosis Title</h3>
+                            
+                            <div class="mt-4 p-4 rounded-xl bg-white border border-slate-200 shadow-sm">
+                                <span class="text-xs font-semibold text-sky-700 uppercase tracking-wider block mb-1">Recommended Repair Action:</span>
+                                <p class="text-base font-semibold text-slate-800" id="diagnosticRecommendation">Recommended action text here...</p>
+                            </div>
+                        </div>
+
+                        <!-- Diagnostic Explanation Summary Block -->
+                        <div class="p-5 bg-sky-50/70 rounded-2xl border border-sky-200">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-sky-900 mb-2 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Diagnostic Summary:
+                            </h4>
+                            <p class="text-sm font-medium text-slate-800 leading-relaxed italic bg-white p-4 rounded-xl border border-sky-100 shadow-sm" id="explanationText">
+                                Loading diagnostic summary...
+                            </p>
+                        </div>
+
+                        <!-- Action Checklist -->
+                        <div class="border border-slate-200 rounded-xl p-4 bg-white">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Suggested Technical Verification Steps:</h4>
+                            <ul class="space-y-2 text-sm text-slate-700" id="technicalStepsList">
+                                <!-- Populated dynamically -->
+                            </ul>
+                        </div>
+
+                        <div class="pt-4 flex justify-between items-center">
+                            <button onclick="goBackToLastScreen()" class="px-4 py-2 text-slate-600 hover:text-slate-800 text-sm font-medium flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                                <span>Change Answers</span>
+                            </button>
+                            <button onclick="resetDiagnostic()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm rounded-xl transition shadow-sm flex items-center gap-2">
+                                <span>Start New Diagnosis</span>
+                            </button>
+                        </div>
+                    </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p>Laptop Diagnostic Assistant • Power & Boot Hardware Troubleshooting Tool</p>
+    </footer>
+
+    <!-- Knowledge Base Inspector Modal -->
+    <div id="kbModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl border border-slate-200 fade-in">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-900 text-white">
+                <div>
+                    <h3 class="font-bold text-lg">System Diagnostic Reference</h3>
+                    <p class="text-xs text-sky-400">Troubleshooting Principles & Decision Matrix</p>
+                </div>
+                <button onclick="toggleKBModal(false)" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-6 text-sm text-slate-700">
+                <div>
+                    <h4 class="font-bold text-slate-900 text-base mb-2">Hardware Principles</h4>
+                    <ul class="list-disc pl-5 space-y-1 text-xs leading-relaxed text-slate-600">
+                        <li>Lack of LED indicators and fan movement indicates power circuit failure, exhausted battery, or adapter fault.</li>
+                        <li>Functional LED and fans paired with working external video output pinpoints internal LCD panel or backlight failure.</li>
+                        <li>Power LEDs active without display output on either internal or external monitor indicates memory (RAM) POST failure or motherboard logic fault.</li>
+                        <li>Blue recovery screen (BSOD) confirms hardware power & video are functional, but system boot files or drivers are corrupted.</li>
+                        <li>Rapidly blinking charger LED indicates short-circuit protection triggered within the power adapter or charging port.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-900 text-base mb-3">Diagnostic Decision Matrix</h4>
+                    <div class="space-y-3 text-xs font-mono">
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <span class="font-bold text-sky-700">SCENARIO 1:</span><br>
+                            IF (Power Symptoms = "No lights/fan") AND (Charger Light = "OFF or blinking")<br>
+                            THEN Status = "Power Supply / Adapter Failure"<br>
+                            RECOMMENDATION = "Test with an alternative wall outlet or replace the charger."
+                        </div>
+
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <span class="font-bold text-sky-700">SCENARIO 2:</span><br>
+                            IF (Power Symptoms = "Screen black") AND (External Display = "Yes")<br>
+                            THEN Status = "Internal Display Panel Failure"<br>
+                            RECOMMENDATION = "Replace the laptop LCD screen assembly or internal display cable."
+                        </div>
+
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <span class="font-bold text-sky-700">SCENARIO 3:</span><br>
+                            IF (Power Symptoms = "Screen black") AND (External Display = "No")<br>
+                            THEN Status = "RAM / POST Initialization Failure"<br>
+                            RECOMMENDATION = "Reseat or swap internal RAM modules."
+                        </div>
+
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <span class="font-bold text-sky-700">SCENARIO 4:</span><br>
+                            IF (Power Symptoms = "Blue recovery screen")<br>
+                            THEN Status = "OS System File Corruption"<br>
+                            RECOMMENDATION = "Boot into System Recovery to perform startup repair."
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button onclick="toggleKBModal(false)" class="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800">Close Reference Guide</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State Machine Storage
+        const state = {
+            screen1: null, // 'no_power' | 'black_screen' | 'blue_screen'
+            screen2: null, // 'ext_yes' | 'ext_no'
+            screen3: null, // 'charger_solid' | 'charger_off_blink'
+            currentScreen: 1,
+            lastVisitedScreen: 1,
+            executedRule: null
+        };
+
+        // Text mappings for diagnostic summary
+        const symptomLabels = {
+            'no_power': 'No lights turn on and no fan sound is heard',
+            'black_screen': 'Power LED lights up and fans spin, but the screen stays completely black',
+            'blue_screen': 'Screen turns on and displays a blue error/recovery screen'
+        };
+
+        const extLabels = {
+            'ext_yes': 'Yes, the external monitor displays the desktop normally',
+            'ext_no': 'No, neither the built-in screen nor the external monitor displays anything'
+        };
+
+        const chargerLabels = {
+            'charger_solid': 'Charging indicator light is solid ON',
+            'charger_off_blink': 'Charging indicator light is OFF or blinking rapidly'
+        };
+
+        function selectOption(screenKey, value) {
+            state[screenKey] = value;
+            
+            // Highlight selected card visually
+            const inputs = document.querySelectorAll(`input[name="${screenKey}_option"]`);
+            inputs.forEach(input => {
+                const card = input.closest('.option-card');
+                if (input.value === value) {
+                    card.classList.add('border-sky-500', 'bg-sky-50/60');
+                    card.classList.remove('border-slate-200');
+                } else {
+                    card.classList.remove('border-sky-500', 'bg-sky-50/60');
+                    card.classList.add('border-slate-200');
+                }
+            });
+
+            // Enable next button
+            if (screenKey === 'screen1') document.getElementById('btnNext1').disabled = false;
+            if (screenKey === 'screen2') document.getElementById('btnNext2').disabled = false;
+            if (screenKey === 'screen3') document.getElementById('btnNext3').disabled = false;
+        }
+
+        function advanceFromScreen1() {
+            if (!state.screen1) return;
+
+            if (state.screen1 === 'no_power') {
+                showScreen(3);
+            } else if (state.screen1 === 'black_screen') {
+                showScreen(2);
+            } else if (state.screen1 === 'blue_screen') {
+                generateDiagnosis();
+            }
+        }
+
+        function showScreen(screenNum) {
+            state.lastVisitedScreen = state.currentScreen;
+            state.currentScreen = screenNum;
+
+            document.getElementById('screen1').classList.add('hidden');
+            document.getElementById('screen2').classList.add('hidden');
+            document.getElementById('screen3').classList.add('hidden');
+            document.getElementById('screenResults').classList.add('hidden');
+
+            if (screenNum === 1) {
+                document.getElementById('screen1').classList.remove('hidden');
+                updateStepper(1);
+            } else if (screenNum === 2) {
+                document.getElementById('screen2').classList.remove('hidden');
+                updateStepper(2);
+            } else if (screenNum === 3) {
+                document.getElementById('screen3').classList.remove('hidden');
+                updateStepper(2); // Step 2 of 3 visually
+            } else if (screenNum === 'results') {
+                document.getElementById('screenResults').classList.remove('hidden');
+                updateStepper(3);
+            }
+        }
+
+        function goBackTo(screenNum) {
+            showScreen(screenNum);
+        }
+
+        function goBackToLastScreen() {
+            showScreen(state.lastVisitedScreen);
+        }
+
+        function updateStepper(step) {
+            const s1Circle = document.getElementById('stepCircle1');
+            const s2Circle = document.getElementById('stepCircle2');
+            const s3Circle = document.getElementById('stepCircle3');
+            const conn1 = document.getElementById('stepConnector1');
+            const conn2 = document.getElementById('stepConnector2');
+
+            // Reset circles
+            s2Circle.className = "w-10 h-10 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-all";
+            s3Circle.className = "w-10 h-10 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition-all";
+            conn1.className = "flex-1 h-1 bg-slate-200 mx-3 rounded transition-all";
+            conn2.className = "flex-1 h-1 bg-slate-200 mx-3 rounded transition-all";
+
+            if (step >= 1) {
+                s1Circle.className = "w-10 h-10 rounded-full bg-sky-600 text-white font-bold flex items-center justify-center shadow-md transition-all";
+            }
+            if (step >= 2) {
+                s2Circle.className = "w-10 h-10 rounded-full bg-sky-600 text-white font-bold flex items-center justify-center shadow-md transition-all";
+                conn1.className = "flex-1 h-1 bg-sky-600 mx-3 rounded transition-all";
+            }
+            if (step >= 3) {
+                s3Circle.className = "w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shadow-md transition-all";
+                conn2.className = "flex-1 h-1 bg-emerald-600 mx-3 rounded transition-all";
+            }
+        }
+
+        // Core Diagnostic Logic
+        function generateDiagnosis() {
+            let diagnosis = null;
+
+            if (state.screen1 === 'no_power' && state.screen3 === 'charger_off_blink') {
+                diagnosis = {
+                    ruleNumber: 1,
+                    ruleName: 'Power Adapter / Supply Failure',
+                    status: 'Power Supply / Adapter Failure',
+                    recommendation: 'Test with an alternative wall outlet or replace the charger.',
+                    actionTemplate: 'test with an alternative wall outlet or replace the charger.',
+                    screenX: '1 and Screen 3',
+                    uiSelections: `'${symptomLabels['no_power']}' in Screen 1 and '${chargerLabels['charger_off_blink']}' in Screen 3`,
+                    steps: [
+                        'Plug charger into a known working wall outlet without power strips.',
+                        'Inspect the AC charger cable for physical bends, fraying, or damage.',
+                        'Test with a secondary compatible OEM laptop adapter if available.',
+                        'Check DC jack port for debris or loose physical pin connection.'
+                    ]
+                };
+            }
+            else if (state.screen1 === 'no_power' && state.screen3 === 'charger_solid') {
+                diagnosis = {
+                    ruleNumber: 1,
+                    ruleName: 'Hard Power Reset Required',
+                    status: 'Embedded Controller / Motherboard Power Rail Lockup',
+                    recommendation: 'Perform a static battery drain power reset.',
+                    actionTemplate: 'perform a hard power reset by disconnecting AC power and holding the power button for 30 seconds.',
+                    screenX: '1 and Screen 3',
+                    uiSelections: `'${symptomLabels['no_power']}' in Screen 1 and '${chargerLabels['charger_solid']}' in Screen 3`,
+                    steps: [
+                        'Disconnect AC adapter power plug.',
+                        'If laptop has removable battery, remove it from the bay.',
+                        'Press and hold the power button down continuously for 30 seconds to drain residual charge.',
+                        'Reconnect AC power adapter and attempt to turn on.'
+                    ]
+                };
+            }
+            else if (state.screen1 === 'black_screen' && state.screen2 === 'ext_yes') {
+                diagnosis = {
+                    ruleNumber: 2,
+                    ruleName: 'Internal Display Panel Failure',
+                    status: 'Internal Display Panel Failure',
+                    recommendation: 'Replace the laptop LCD screen assembly or internal display cable.',
+                    actionTemplate: 'replace the laptop LCD screen assembly or internal display cable.',
+                    screenX: '1 and Screen 2',
+                    uiSelections: `'${symptomLabels['black_screen']}' in Screen 1 and '${extLabels['ext_yes']}' in Screen 2`,
+                    steps: [
+                        'Shine a bright flashlight closely at the laptop screen to check if image is visible (backlight failure).',
+                        'Open and close laptop lid slowly to inspect for screen cable pinching.',
+                        'Re-seat the internal EDP display ribbon cable on motherboard.',
+                        'Replace laptop LCD panel matrix.'
+                    ]
+                };
+            }
+            else if (state.screen1 === 'black_screen' && state.screen2 === 'ext_no') {
+                diagnosis = {
+                    ruleNumber: 3,
+                    ruleName: 'RAM / POST Initialization Failure',
+                    status: 'RAM / POST Initialization Failure',
+                    recommendation: 'Reseat or swap internal RAM modules.',
+                    actionTemplate: 'reseat or swap internal RAM modules.',
+                    screenX: '1 and Screen 2',
+                    uiSelections: `'${symptomLabels['black_screen']}' in Screen 1 and '${extLabels['ext_no']}' in Screen 2`,
+                    steps: [
+                        'Power off laptop and disconnect power source.',
+                        'Remove bottom casing to access SODIMM RAM slots.',
+                        'Unclip RAM stick, clean gold contact fingers with isopropyl alcohol, and re-insert firmly.',
+                        'If multiple RAM sticks are installed, test booting with one stick at a time in alternate slots.'
+                    ]
+                };
+            }
+            else if (state.screen1 === 'blue_screen') {
+                diagnosis = {
+                    ruleNumber: 4,
+                    ruleName: 'OS System File Corruption',
+                    status: 'OS System File Corruption',
+                    recommendation: 'Boot into System Recovery to perform startup repair.',
+                    actionTemplate: 'boot into System Recovery to perform startup repair.',
+                    screenX: '1',
+                    uiSelections: `'${symptomLabels['blue_screen']}' in Screen 1`,
+                    steps: [
+                        'Allow system to trigger Windows Automatic Repair mode after 2 failed boots.',
+                        'Navigate to Advanced Options -> Startup Repair.',
+                        'Run command prompt tool: "sfc /scannow" and "chkdsk /f".',
+                        'If repair fails, perform System Restore to a previous restore point or reinstall OS.'
+                    ]
+                };
+            }
+
+            if (!diagnosis) return;
+
+            state.executedRule = { number: diagnosis.ruleNumber, name: diagnosis.ruleName };
+
+            // Render Results UI
+            document.getElementById('ruleIdBadge').innerText = diagnosis.ruleName;
+            document.getElementById('diagnosticStatus').innerText = diagnosis.status;
+            document.getElementById('diagnosticRecommendation').innerText = diagnosis.recommendation;
+
+            const summaryText = `The system recommends ${diagnosis.actionTemplate} BECAUSE you selected ${diagnosis.uiSelections}, indicating ${diagnosis.status}.`;
+            
+            document.getElementById('explanationText').innerText = summaryText;
+
+            // Render steps
+            const stepsList = document.getElementById('technicalStepsList');
+            stepsList.innerHTML = '';
+            diagnosis.steps.forEach(step => {
+                const li = document.createElement('li');
+                li.className = "flex items-start gap-2";
+                li.innerHTML = `
+                    <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <span>${step}</span>
+                `;
+                stepsList.appendChild(li);
+            });
+
+            showScreen('results');
+        }
+
+        // Alias for backwards compatibility
+        const evaluateInference = generateDiagnosis;
+
+        function resetDiagnostic() {
+            state.screen1 = null;
+            state.screen2 = null;
+            state.screen3 = null;
+            state.executedRule = null;
+
+            // Uncheck inputs
+            document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('border-sky-500', 'bg-sky-50/60');
+                card.classList.add('border-slate-200');
+            });
+
+            document.getElementById('btnNext1').disabled = true;
+            document.getElementById('btnNext2').disabled = true;
+            document.getElementById('btnNext3').disabled = true;
+
+            showScreen(1);
+        }
+
+        function loadPreset(presetKey) {
+            resetDiagnostic();
+            if (presetKey === 'rule1') {
+                const radio1 = document.querySelector('input[name="screen1_option"][value="no_power"]');
+                radio1.checked = true;
+                selectOption('screen1', 'no_power');
+                advanceFromScreen1();
+
+                const radio3 = document.querySelector('input[name="screen3_option"][value="charger_off_blink"]');
+                radio3.checked = true;
+                selectOption('screen3', 'charger_off_blink');
+                generateDiagnosis();
+            } else if (presetKey === 'rule2') {
+                const radio1 = document.querySelector('input[name="screen1_option"][value="black_screen"]');
+                radio1.checked = true;
+                selectOption('screen1', 'black_screen');
+                advanceFromScreen1();
+
+                const radio2 = document.querySelector('input[name="screen2_option"][value="ext_yes"]');
+                radio2.checked = true;
+                selectOption('screen2', 'ext_yes');
+                generateDiagnosis();
+            } else if (presetKey === 'rule3') {
+                const radio1 = document.querySelector('input[name="screen1_option"][value="black_screen"]');
+                radio1.checked = true;
+                selectOption('screen1', 'black_screen');
+                advanceFromScreen1();
+
+                const radio2 = document.querySelector('input[name="screen2_option"][value="ext_no"]');
+                radio2.checked = true;
+                selectOption('screen2', 'ext_no');
+                generateDiagnosis();
+            } else if (presetKey === 'rule4') {
+                const radio1 = document.querySelector('input[name="screen1_option"][value="blue_screen"]');
+                radio1.checked = true;
+                selectOption('screen1', 'blue_screen');
+                advanceFromScreen1();
+            }
+        }
+
+        function toggleKBModal(show) {
+            const modal = document.getElementById('kbModal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
